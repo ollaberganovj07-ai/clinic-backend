@@ -1,18 +1,23 @@
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
-const userRoutes = require("./routes/user.routes");
+
+const userRoutes = require("./modules/users/users.routes");
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
 // ROUTE ULASH
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
 app.use("/api/users", userRoutes);
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("FILE IS RUNNING");
-  console.log(`Server ${PORT} portda ishlayapti`);
+  console.log(`🚀 Server ${PORT} portda ishlayapti`);
 });
