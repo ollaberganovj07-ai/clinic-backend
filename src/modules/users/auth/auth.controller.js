@@ -56,6 +56,23 @@ async function login(req, res, next) {
 }
 
 /**
+ * GET /api/auth/patients
+ * Get patients list (Receptionist/Admin)
+ */
+async function getPatients(req, res, next) {
+  try {
+    const patients = await authService.getPatients();
+    return res.status(200).json({
+      success: true,
+      data: patients,
+      count: patients.length
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+/**
  * GET /api/auth/users
  * Get all users (Admin only)
  */
@@ -103,6 +120,7 @@ async function updateUserRole(req, res, next) {
 module.exports = { 
   register, 
   login,
+  getPatients,
   getAllUsers,
   updateUserRole
 };

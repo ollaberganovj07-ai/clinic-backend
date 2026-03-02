@@ -19,6 +19,17 @@ router.post("/register", authController.register);
 router.post("/login", authController.login);
 
 /**
+ * GET /api/auth/patients
+ * Get patients list (Receptionist/Admin)
+ */
+router.get(
+  "/patients",
+  authMiddleware,
+  checkRole(ROLES.RECEPTIONIST, ROLES.ADMIN),
+  authController.getPatients
+);
+
+/**
  * GET /api/auth/users
  * Get all users (Admin only)
  */

@@ -88,9 +88,15 @@ async function getAllUsers() {
   return users;
 }
 
+async function getPatients() {
+  const patients = await authRepo.getPatients();
+  return patients;
+}
+
 module.exports = { 
   register, 
   login,
   updateUserRole,
-  getAllUsers
+  getAllUsers,
+  getPatients
 };

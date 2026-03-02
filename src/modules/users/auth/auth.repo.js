@@ -75,6 +75,22 @@ async function updateUserRole(userId, newRole) {
 }
 
 /**
+ * getPatients - Bemorlarni olish (Receptionist/Admin)
+ */
+async function getPatients() {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, name, email, role, created_at')
+    .eq('role', ROLES.PATIENT)
+    .order('name', { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+  return data;
+}
+
+/**
  * getAllUsers - Barcha foydalanuvchilarni olish (Admin only)
  */
 async function getAllUsers() {
@@ -94,5 +110,6 @@ module.exports = {
   findUserById,
   createUser,
   updateUserRole,
-  getAllUsers
+  getAllUsers,
+  getPatients
 };
