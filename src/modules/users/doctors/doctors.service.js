@@ -1,4 +1,5 @@
 const doctorsRepo = require("./doctors.repo");
+const { NotFoundError, ValidationError } = require("../../../shared/errors/AppError");
 
 /**
  * getAllDoctors - Service layer for fetching all doctors
@@ -17,12 +18,67 @@ async function getDoctorById(doctorId) {
   const doctor = await doctorsRepo.getDoctorById(doctorId);
   
   if (!doctor) {
-    const err = new Error("Doktor topilmadi");
-    err.status = 404;
-    throw err;
+    throw new NotFoundError("Doktor topilmadi");
   }
 
   return doctor;
 }
 
-module.exports = { getAllDoctors, getDoctorById };
+/**
+ * createDoctor - Create a new doctor
+ * @param {object} doctorData - Doctor information
+ */
+async function createDoctor(doctorData) {
+  const { name, specialization, experience_years, phone, email } = doctorData;
+
+  if (!name || !specialization) {
+    throw new ValidationError("name va specialization majburiy");
+  }
+
+  const doctor = await doctorsRepo.createDoctor({
+    name,
+    specialization,
+    experience_years,
+    phone,
+    email
+  });
+
+  return doctor;
+}
+
+/**
+ * updateDoctor - Update doctor information
+ * @param {string} doctorId - Doctor ID
+ * @param {object} updateData - Updated information
+ */
+async function updateDoctor(doctorId, updateData) {
+  const doctor = await doctorsRepo.updateDoctor(doctorId, updateData);
+
+  if (!doctor) {
+    throw new NotFoundError("Doktor topilmadi");
+  }
+
+  return doctor;
+}
+
+/**
+ * deleteDoctor - Delete a doctor
+ * @param {string} doctorId - Doctor ID
+ */
+async function deleteDoctor(doctorId) {
+  const deleted = await doctorsRepo.deleteDoctor(doctorId);
+
+  if (!deleted) {
+    throw new NotFoundError("Doktor topilmadi");
+  }
+
+  return deleted;
+}
+
+module.exports = { 
+  getAllDoctors, 
+  getDoctorById,
+  createDoctor,
+  updateDoctor,
+  deleteDoctor
+};

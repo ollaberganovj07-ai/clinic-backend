@@ -83,4 +83,73 @@ async function getDoctorById(doctorId) {
   }
 }
 
-module.exports = { getAllDoctors, getDoctorById };
+/**
+ * createDoctor - Create a new doctor
+ * @param {object} doctorData - Doctor information
+ */
+async function createDoctor(doctorData) {
+  const { data, error } = await supabase
+    .from('doctors')
+    .insert([doctorData])
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * updateDoctor - Update doctor information
+ * @param {string} doctorId - Doctor ID
+ * @param {object} updateData - Updated information
+ */
+async function updateDoctor(doctorId, updateData) {
+  const { data, error } = await supabase
+    .from('doctors')
+    .update(updateData)
+    .eq('id', doctorId)
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null;
+    }
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * deleteDoctor - Delete a doctor
+ * @param {string} doctorId - Doctor ID
+ */
+async function deleteDoctor(doctorId) {
+  const { data, error } = await supabase
+    .from('doctors')
+    .delete()
+    .eq('id', doctorId)
+    .select()
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      return null;
+    }
+    throw error;
+  }
+
+  return data;
+}
+
+module.exports = { 
+  getAllDoctors, 
+  getDoctorById,
+  createDoctor,
+  updateDoctor,
+  deleteDoctor
+};

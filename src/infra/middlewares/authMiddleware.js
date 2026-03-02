@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { UnauthorizedError } = require("../../shared/errors/AppError");
 
 function getJwtSecret() {
   if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET .env faylida topilmadi");
@@ -7,17 +8,14 @@ function getJwtSecret() {
 
 /**
  * Authentication middleware
- * Validates JWT token and attaches user info to req.user
+ * Validates JWT token and attaches user info (including role) to req.user
  */
 function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        success: false,
-        message: "Token topilmadi. Authorization header required.",
-      });
+      throw new UnauthorizedError("Token topilmadi. Authorization header required.");
     }
 
     const token = authHeader.substring(7);
@@ -27,26 +25,20 @@ function authMiddleware(req, res, next) {
     req.user = {
       id: decoded.sub,
       email: decoded.email,
+      role: decoded.role || 'patient'
     };
+
+    console.log(`✅ Authenticated user: ${req.user.email} (${req.user.role})`);
 
     next();
   } catch (err) {
     if (err.name === "JsonWebTokenError") {
-      return res.status(401).json({
-        success: false,
-        message: "Noto'g'ri token",
-      });
+      return next(new UnauthorizedError("Noto'g'ri token"));
     }
     if (err.name === "TokenExpiredError") {
-      return res.status(401).json({
-        success: false,
-        message: "Token muddati tugagan",
-      });
+      return next(new UnauthorizedError("Token muddati tugagan"));
     }
-    return res.status(500).json({
-      success: false,
-      message: "Autentifikatsiya xatosi",
-    });
+    return next(err);
   }
 }
 

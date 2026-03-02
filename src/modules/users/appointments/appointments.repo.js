@@ -1,4 +1,5 @@
 const { supabase } = require("../../../config/supabase");
+const { ConflictError } = require("../../../shared/errors/AppError");
 
 /**
  * checkSlotAvailability - Check if a slot is still available
@@ -31,9 +32,7 @@ async function createAppointment(appointmentData) {
 
   const slot = await checkSlotAvailability(slot_id);
   if (!slot) {
-    const err = new Error("Slot mavjud emas yoki allaqachon band qilingan");
-    err.status = 409;
-    throw err;
+    throw new ConflictError("Slot mavjud emas yoki allaqachon band qilingan");
   }
 
   const { data: updatedSlot, error: updateError } = await supabase
@@ -45,9 +44,7 @@ async function createAppointment(appointmentData) {
     .single();
 
   if (updateError || !updatedSlot) {
-    const err = new Error("Slot boshqa bemor tomonidan band qilindi");
-    err.status = 409;
-    throw err;
+    throw new ConflictError("Slot boshqa bemor tomonidan band qilindi");
   }
 
   const { data: appointment, error: appointmentError } = await supabase
@@ -99,6 +96,49 @@ async function getAppointmentsByPatient(patientId) {
 }
 
 /**
+ * getAppointmentsByDoctor - Get all appointments for a doctor
+ * @param {string} doctorId - Doctor ID
+ */
+async function getAppointmentsByDoctor(doctorId) {
+  const { data, error } = await supabase
+    .from('appointments')
+    .select(`
+      *,
+      patient:users!appointments_patient_id_fkey(id, name, email),
+      slot:slots(*)
+    `)
+    .eq('doctor_id', doctorId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * getAllAppointments - Get all appointments (for staff)
+ */
+async function getAllAppointments() {
+  const { data, error } = await supabase
+    .from('appointments')
+    .select(`
+      *,
+      patient:users!appointments_patient_id_fkey(id, name, email),
+      doctor:doctors(*),
+      slot:slots(*)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+/**
  * cancelAppointment - Cancel an appointment and free the slot
  * @param {string} appointmentId - Appointment ID
  * @param {string} patientId - Patient ID (for authorization)
@@ -139,9 +179,51 @@ async function cancelAppointment(appointmentId, patientId) {
   return appointment;
 }
 
+/**
+ * cancelAnyAppointment - Cancel any appointment (staff only)
+ * @param {string} appointmentId - Appointment ID
+ */
+async function cancelAnyAppointment(appointmentId) {
+  const { data: appointment, error: fetchError } = await supabase
+    .from('appointments')
+    .select('*, slot:slots(*)')
+    .eq('id', appointmentId)
+    .single();
+
+  if (fetchError) {
+    if (fetchError.code === 'PGRST116') {
+      return null;
+    }
+    throw fetchError;
+  }
+
+  const { error: updateAppointmentError } = await supabase
+    .from('appointments')
+    .update({ status: 'cancelled' })
+    .eq('id', appointmentId);
+
+  if (updateAppointmentError) {
+    throw updateAppointmentError;
+  }
+
+  const { error: updateSlotError } = await supabase
+    .from('slots')
+    .update({ is_booked: false })
+    .eq('id', appointment.slot_id);
+
+  if (updateSlotError) {
+    throw updateSlotError;
+  }
+
+  return appointment;
+}
+
 module.exports = {
   checkSlotAvailability,
   createAppointment,
   getAppointmentsByPatient,
-  cancelAppointment
+  getAppointmentsByDoctor,
+  getAllAppointments,
+  cancelAppointment,
+  cancelAnyAppointment
 };
