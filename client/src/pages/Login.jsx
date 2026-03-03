@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 const ROLE_PATHS = {
   admin: '/admin/dashboard',
   receptionist: '/reception/dashboard',
-  doctor: '/doctor/profile',
+  doctor: '/doctor/dashboard',
   patient: '/patient/home',
 };
 

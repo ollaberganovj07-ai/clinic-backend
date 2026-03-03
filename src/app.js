@@ -1,5 +1,6 @@
 // app.js
 const express = require('express');
+const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
@@ -13,7 +14,7 @@ const appointmentsRoutes = require("./modules/users/appointments/appointments.ro
 const app = express();
 
 // Xavfsizlik va Middleware
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
 
@@ -24,11 +25,21 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Route-larni ulash
+// API Route-larni ulash
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/doctors', doctorsRoutes);
 app.use('/api/appointments', appointmentsRoutes);
+
+// SPA - React frontend (static files)
+const clientDist = path.join(__dirname, '../client/dist');
+app.use(express.static(clientDist));
+
+// SPA fallback - barcha boshqa route'lar uchun index.html (React Router)
+// Express 5 path-to-regexp rejects '*', use regex to match non-API GET requests
+app.get(/^\/(?!api).*$/, (req, res, next) => {
+  res.sendFile(path.join(clientDist, 'index.html'));
+});
 
 // Global xato ishlovchi
 app.use((err, req, res, next) => {
@@ -36,4 +47,4 @@ app.use((err, req, res, next) => {
   res.status(status).json({ success: false, message: err.message || "Server xatosi" });
 });
 
-module.exports = app; // Bu yerda app-ni eksport qilamiz
+module.exports = app;

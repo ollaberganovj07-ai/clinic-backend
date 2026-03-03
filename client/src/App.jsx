@@ -5,13 +5,13 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import ReceptionDashboard from './pages/ReceptionDashboard';
-import DoctorProfile from './pages/DoctorProfile';
+import DoctorDashboard from './pages/DoctorDashboard';
 import PatientHome from './pages/PatientHome';
 
 const ROLE_PATHS = {
   admin: '/admin/dashboard',
   receptionist: '/reception/dashboard',
-  doctor: '/doctor/profile',
+  doctor: '/doctor/dashboard',
   patient: '/patient/home',
 };
 
@@ -24,22 +24,21 @@ function RoleRedirect() {
 
 function Unauthorized() {
   const { logout } = useAuth();
+  const handleBack = () => {
+    logout();
+    window.location.href = '/';
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <div className="text-center max-w-md">
         <h1 className="text-2xl font-semibold text-slate-800 mb-2">Access Denied</h1>
-        <p className="text-slate-600 mb-6">You don't have permission to view this page.</p>
-        <a
-          href="/login"
-          onClick={(e) => {
-            e.preventDefault();
-            logout();
-            window.location.href = '/login';
-          }}
+        <p className="text-slate-600 mb-6">You don&apos;t have permission to view this page.</p>
+        <button
+          onClick={handleBack}
           className="inline-block px-6 py-3 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700"
         >
           Back to Login
-        </a>
+        </button>
       </div>
     </div>
   );
@@ -63,9 +62,9 @@ function AppRoutes() {
           <ReceptionDashboard />
         </ProtectedRoute>
       } />
-      <Route path="/doctor/profile" element={
+      <Route path="/doctor/dashboard" element={
         <ProtectedRoute allowedRoles={['doctor']}>
-          <DoctorProfile />
+          <DoctorDashboard />
         </ProtectedRoute>
       } />
       <Route path="/patient/home" element={
@@ -74,7 +73,7 @@ function AppRoutes() {
         </ProtectedRoute>
       } />
       <Route path="/unauthorized" element={<Unauthorized />} />
-      <Route path="/" element={<RoleRedirect />} />
+      <Route path="/" element={isAuthenticated ? <RoleRedirect /> : <Login />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
