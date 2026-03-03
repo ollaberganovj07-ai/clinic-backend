@@ -47,15 +47,34 @@ function ReceptionDashboard() {
   async function fetchData() {
     setLoading(true);
     setError(null);
+    const errors = [];
     try {
-      const [doctorsRes, patientsRes, appointmentsRes] = await Promise.all([
+      const [doctorsRes, patientsRes, appointmentsRes] = await Promise.allSettled([
         api.doctors.getAll(),
         api.auth.getPatients(),
         api.appointments.getAll(),
       ]);
-      setDoctors(doctorsRes.data || []);
-      setPatients(patientsRes.data || []);
-      setAppointments(appointmentsRes.data || []);
+      if (doctorsRes.status === 'fulfilled') {
+        setDoctors(doctorsRes.value?.data ?? []);
+      } else {
+        errors.push('Doctors: ' + (doctorsRes.reason?.message || 'Failed'));
+        setDoctors([]);
+      }
+      if (patientsRes.status === 'fulfilled') {
+        setPatients(patientsRes.value?.data ?? []);
+      } else {
+        errors.push('Patients: ' + (patientsRes.reason?.message || 'Failed'));
+        setPatients([]);
+      }
+      if (appointmentsRes.status === 'fulfilled') {
+        setAppointments(appointmentsRes.value?.data ?? []);
+      } else {
+        errors.push('Appointments: ' + (appointmentsRes.reason?.message || 'Failed'));
+        setAppointments([]);
+      }
+      if (errors.length > 0) {
+        setError(errors.join('. '));
+      }
     } catch (err) {
       setError(err.message || 'Failed to load data');
       setDoctors([]);
