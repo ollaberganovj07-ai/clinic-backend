@@ -22,19 +22,28 @@ function Login() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [validationError, setValidationError] = useState('');
   const { login, loading, error } = useAuth();
+  const displayError = validationError || error;
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setPhoneError('');
-    if (!isValidPhone(phone)) {
+    setValidationError('');
+    const trimmedPhone = (phone || '').trim();
+    const trimmedPassword = (password || '').trim();
+    if (!trimmedPhone || !trimmedPassword) {
+      setValidationError('Telefon raqam va parol majburiy');
+      return;
+    }
+    if (!isValidPhone(trimmedPhone)) {
       setPhoneError('Telefon raqam kamida 9 ta raqamdan iborat bo\'lishi kerak');
       return;
     }
-    const normalized = normalizePhone(phone);
+    const normalized = normalizePhone(trimmedPhone);
     try {
-      const { user } = await login(normalized, password);
+      const { user } = await login(normalized, trimmedPassword);
       const role = user?.role || 'patient';
       const path = ROLE_PATHS[role] || ROLE_PATHS.patient;
       navigate(path, { replace: true });
@@ -75,9 +84,9 @@ function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
+            {displayError && (
               <div className="p-3 rounded-lg bg-red-50 border border-red-100 text-red-600 text-sm">
-                {error}
+                {displayError}
               </div>
             )}
 
@@ -97,6 +106,7 @@ function Login() {
                   const v = e.target.value.replace(/[^\d+\s]/g, '');
                   setPhone(v);
                   setPhoneError('');
+                  setValidationError('');
                 }}
                 required
                 autoComplete="tel"
@@ -119,7 +129,10 @@ function Login() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setValidationError('');
+                }}
                 required
                 autoComplete="current-password"
                 placeholder="••••••••"
