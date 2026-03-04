@@ -5,8 +5,23 @@ const { ROLES } = require('../../../shared/constants/roles');
 async function findUserByEmail(email) {
   const { data, error } = await supabase
     .from('users')
-    .select('id, name, email, password_hash, role, created_at')
+    .select('id, name, email, password_hash, role, created_at, phone_number')
     .eq('email', email)
+    .single();
+  if (error && error.code !== 'PGRST116') {
+    throw error;
+  }
+  return data;
+}
+
+/**
+ * findUserByPhone - Telefon raqami orqali foydalanuvchini topish (login uchun)
+ */
+async function findUserByPhone(phone) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, name, email, phone_number, password_hash, role, created_at')
+    .eq('phone_number', phone)
     .single();
   if (error && error.code !== 'PGRST116') {
     throw error;
@@ -17,7 +32,7 @@ async function findUserByEmail(email) {
 async function findUserById(userId) {
   const { data, error } = await supabase
     .from('users')
-    .select('id, name, email, role, created_at')
+    .select('id, name, email, role, created_at, phone_number')
     .eq('id', userId)
     .single();
   if (error && error.code !== 'PGRST116') {
@@ -31,11 +46,12 @@ async function createUser(userData) {
     .from('users')
     .insert([{
       name: userData.name,
-      email: userData.email,
-      password_hash: userData.passwordHash,
+      email: userData.email || null, // Email ixtiyoriy bo'lishi mumkin
+      phone_number: userData.phoneNumber, // Telefon raqami qo'shildi
+      password_hash: userData.passwordHash || null,
       role: userData.role || ROLES.PATIENT,
     }])
-    .select('id, name, email, role')
+    .select('id, name, email, phone_number, role')
     .single();
   if (error) {
     throw error;
@@ -59,7 +75,7 @@ async function updateUserRole(userId, newRole) {
 async function getPatients() {
   const { data, error } = await supabase
     .from('users')
-    .select('id, name, email, role, created_at')
+    .select('id, name, email, phone_number, role, created_at')
     .eq('role', ROLES.PATIENT)
     .order('name', { ascending: true });
   if (error) {
@@ -71,7 +87,7 @@ async function getPatients() {
 async function getAllUsers() {
   const { data, error } = await supabase
     .from('users')
-    .select('id, name, email, role, created_at')
+    .select('id, name, email, phone_number, role, created_at')
     .order('created_at', { ascending: false });
   if (error) {
     throw error;
@@ -81,6 +97,7 @@ async function getAllUsers() {
 
 module.exports = {
   findUserByEmail,
+  findUserByPhone, // Eksportga qo'shildi
   findUserById,
   createUser,
   updateUserRole,

@@ -23,11 +23,11 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const login = async (email, password) => {
+  const login = async (phone, password) => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.auth.login(email, password);
+      const { data } = await api.auth.login(phone, password);
       const { user: u, token: t } = data;
       localStorage.setItem(STORAGE_KEYS.TOKEN, t);
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(u));

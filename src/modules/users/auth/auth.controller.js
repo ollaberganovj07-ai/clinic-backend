@@ -30,23 +30,33 @@ async function register(req, res, next) {
 }
 
 /**
- * POST /api/auth/login
+ * Normalize phone: digits only, minimal length 9
+ */
+function normalizePhone(value) {
+  const digits = (value || "").replace(/\D/g, "");
+  return digits.length >= 9 ? digits : null;
+}
+
+/**
+ * POST /api/auth/login (phone + password)
  */
 async function login(req, res, next) {
   try {
-    const email = typeof req.body.email === "string" ? req.body.email.trim().toLowerCase() : "";
+    const phoneRaw = typeof req.body.phone === "string" ? req.body.phone.trim() : "";
     const password = typeof req.body.password === "string" ? req.body.password : "";
 
-    if (!email || !password) {
+    const phone = normalizePhone(phoneRaw);
+
+    if (!phone || !password) {
       return res.status(400).json({
         success: false,
-        message: "email and password are required",
+        message: "Telefon raqam va parol majburiy",
       });
     }
 
-    const result = await authService.login({ email, password });
-    return res.status(200).json({ 
-      success: true, 
+    const result = await authService.login({ phone, password });
+    return res.status(200).json({
+      success: true,
       data: result,
       message: "Kirish muvaffaqiyatli"
     });

@@ -9,16 +9,32 @@ const ROLE_PATHS = {
   patient: '/patient/home',
 };
 
+function normalizePhone(value) {
+  return (value || '').replace(/\D/g, '');
+}
+
+function isValidPhone(phone) {
+  const digits = normalizePhone(phone);
+  return digits.length >= 9 && digits.length <= 15;
+}
+
 function Login() {
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [phoneError, setPhoneError] = useState('');
   const { login, loading, error } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setPhoneError('');
+    if (!isValidPhone(phone)) {
+      setPhoneError('Telefon raqam kamida 9 ta raqamdan iborat bo\'lishi kerak');
+      return;
+    }
+    const normalized = normalizePhone(phone);
     try {
-      const { user } = await login(email, password);
+      const { user } = await login(normalized, password);
       const role = user?.role || 'patient';
       const path = ROLE_PATHS[role] || ROLE_PATHS.patient;
       navigate(path, { replace: true });
@@ -67,21 +83,27 @@ function Login() {
 
             <div>
               <label
-                htmlFor="email"
+                htmlFor="phone"
                 className="block text-sm font-medium text-slate-700 mb-1.5"
               >
-                Email
+                Phone Number
               </label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setPhoneError('');
+                }}
                 required
-                autoComplete="email"
-                placeholder="name@hospital.com"
+                autoComplete="tel"
+                placeholder="+998 90 123 45 67"
                 className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
               />
+              {phoneError && (
+                <p className="mt-1 text-sm text-red-600">{phoneError}</p>
+              )}
             </div>
 
             <div>
@@ -113,7 +135,7 @@ function Login() {
           </form>
 
           <p className="mt-6 text-center text-sm text-slate-500">
-            Supports: Admin, Doctor, Receptionist, Patient
+            Sign in with phone number and password
           </p>
         </div>
 

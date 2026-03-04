@@ -4,6 +4,14 @@ import { api } from '../lib/api';
 
 const SERVICES_KEY = 'hospital_services';
 
+/** Format slot_time as HH:mm; avoids 1970 when value is missing or invalid */
+function formatSlotTime(slotTime) {
+  if (slotTime == null || slotTime === '') return 'N/A';
+  const d = new Date(slotTime);
+  if (Number.isNaN(d.getTime())) return 'N/A';
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 function loadServices() {
   try {
     const s = localStorage.getItem(SERVICES_KEY);
@@ -230,7 +238,7 @@ function ReceptionDashboard() {
                       key={s.id}
                       className="px-3 py-1 rounded-lg bg-white border border-slate-200 text-sm text-slate-700"
                     >
-                      {new Date(s.slot_time).toLocaleString()}
+                      {formatSlotTime(s.slot_time)}
                     </span>
                   ))}
                 </div>
@@ -341,7 +349,7 @@ function ReceptionDashboard() {
                   <option value="">Choose patient...</option>
                   {patients.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} ({p.email})
+                      {p.name} ({p.phone_number || p.email || '—'})
                     </option>
                   ))}
                 </select>
@@ -386,7 +394,7 @@ function ReceptionDashboard() {
                     <option value="">Choose time slot...</option>
                     {slots.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {new Date(s.slot_time).toLocaleString()}
+                        {formatSlotTime(s.slot_time)}
                       </option>
                     ))}
                   </select>
@@ -432,14 +440,14 @@ function ReceptionDashboard() {
                     className="p-4 flex items-center justify-between hover:bg-slate-50"
                   >
                     <div>
-                      <p className="font-medium text-slate-800">
-                        {a.patient?.name || 'Unknown'} → {a.doctor?.name || 'Unknown'}
+                     <p className="font-medium text-slate-800 flex items-center">
+  <span className="bg-primary-100 text-primary-700 px-2 py-0.5 rounded text-xs font-bold mr-2">
+    {a.queue_number || 'N/A'}
+  </span>
+{a.patient?.name || 'Unknown'} → {a.doctor?.name || 'Unknown'}
                       </p>
                       <p className="text-sm text-slate-500">
-                        {a.slot?.slot_time
-                          ? new Date(a.slot.slot_time).toLocaleString()
-                          : 'N/A'}{' '}
-                        • {a.status}
+                        {formatSlotTime(a.slot?.slot_time)} • {a.status}
                       </p>
                     </div>
                   </div>

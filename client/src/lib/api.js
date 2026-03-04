@@ -34,10 +34,10 @@ async function request(endpoint, options = {}) {
 export const api = {
   auth: {
     getPatients: () => request('/auth/patients'),
-    login: (email, password) =>
+    login: (phone, password) =>
       request('/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ phone, password }),
       }),
     register: (name, email, password, role = 'patient') =>
       request('/auth/register', {

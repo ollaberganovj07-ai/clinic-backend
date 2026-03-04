@@ -37,35 +37,41 @@ async function register({ name, email, password, role = ROLES.PATIENT }) {
   return { user, token };
 }
 
-async function login({ email, password }) {
-  const user = await authRepo.findUserByEmail(email);
+async function login({ phone, password }) {
+  const user = await authRepo.findUserByPhone(phone);
   if (!user) {
-    throw new UnauthorizedError("Email yoki parol noto'g'ri");
+    throw new UnauthorizedError("Telefon raqam yoki parol noto'g'ri");
+  }
+
+  if (!user.password_hash) {
+    throw new UnauthorizedError("Telefon raqam yoki parol noto'g'ri");
   }
 
   const valid = await bcrypt.compare(password, user.password_hash);
   if (!valid) {
-    throw new UnauthorizedError("Email yoki parol noto'g'ri");
+    throw new UnauthorizedError("Telefon raqam yoki parol noto'g'ri");
   }
 
   const token = jwt.sign(
-    { 
-      sub: user.id, 
-      email: user.email,
+    {
+      sub: user.id,
+      email: user.email || null,
+      phone: user.phone_number,
       role: user.role
-    }, 
-    getJwtSecret(), 
+    },
+    getJwtSecret(),
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
   );
 
-  return { 
-    user: { 
-      id: user.id, 
-      name: user.name, 
+  return {
+    user: {
+      id: user.id,
+      name: user.name,
       email: user.email,
+      phone_number: user.phone_number,
       role: user.role
-    }, 
-    token 
+    },
+    token
   };
 }
 
