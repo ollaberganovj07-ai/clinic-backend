@@ -4,10 +4,11 @@ import { api } from '../lib/api';
 
 const SERVICES_KEY = 'hospital_services';
 
-/** Format slot_time as HH:mm; avoids 1970 when value is missing or invalid */
-function formatSlotTime(slotTime) {
-  if (slotTime == null || slotTime === '') return 'N/A';
-  const d = new Date(slotTime);
+/** Format slot_time/start_time as HH:mm; avoids 1970 when value is missing or invalid */
+function formatSlotTime(slotOrStart) {
+  const val = slotOrStart;
+  if (val == null || val === '') return 'N/A';
+  const d = new Date(val);
   if (Number.isNaN(d.getTime())) return 'N/A';
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
@@ -238,7 +239,7 @@ function ReceptionDashboard() {
                       key={s.id}
                       className="px-3 py-1 rounded-lg bg-white border border-slate-200 text-sm text-slate-700"
                     >
-                      {formatSlotTime(s.slot_time)}
+                      {formatSlotTime(s.slot_time || s.start_time)}
                     </span>
                   ))}
                 </div>
@@ -394,7 +395,7 @@ function ReceptionDashboard() {
                     <option value="">Choose time slot...</option>
                     {slots.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {formatSlotTime(s.slot_time)}
+                        {formatSlotTime(s.slot_time || s.start_time)}
                       </option>
                     ))}
                   </select>
@@ -447,7 +448,7 @@ function ReceptionDashboard() {
 {a.patient?.name || 'Unknown'} → {a.doctor?.name || 'Unknown'}
                       </p>
                       <p className="text-sm text-slate-500">
-                        {formatSlotTime(a.slot?.slot_time)} • {a.status}
+                        {formatSlotTime(a.slot?.slot_time || a.slot?.start_time)} • {a.status}
                       </p>
                     </div>
                   </div>

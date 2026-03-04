@@ -91,9 +91,11 @@ function Login() {
               <input
                 id="phone"
                 type="tel"
+                inputMode="numeric"
                 value={phone}
                 onChange={(e) => {
-                  setPhone(e.target.value);
+                  const v = e.target.value.replace(/[^\d+\s]/g, '');
+                  setPhone(v);
                   setPhoneError('');
                 }}
                 required
