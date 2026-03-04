@@ -26,7 +26,7 @@ function checkRole(...allowedRoles) {
     const hasAccess = allowedRoles.includes(userRole);
 
     if (!hasAccess) {
-      console.warn(`⚠️ Access denied: User ${(req.user.phone || req.user.email || req.user.id)} (${userRole}) attempted to access resource requiring: ${allowedRoles.join(', ')}`);
+      console.warn(`⚠️ Access denied: User ${(req.user.phone || req.user.id)} (${userRole}) attempted to access resource requiring: ${allowedRoles.join(', ')}`);
       return next(new ForbiddenError(
         `Ruxsat berilmadi. Kerakli rol: ${allowedRoles.join(' yoki ')}`,
         { 
@@ -36,7 +36,7 @@ function checkRole(...allowedRoles) {
       ));
     }
 
-    console.log(`✅ Access granted: User ${(req.user.phone || req.user.email || req.user.id)} (${userRole})`);
+    console.log(`✅ Access granted: User ${(req.user.phone || req.user.id)} (${userRole})`);
     next();
   };
 }
@@ -59,7 +59,7 @@ function checkMinRole(minimumRole) {
     const userRole = req.user.role;
 
     if (!hasRoleLevel(userRole, minimumRole)) {
-      console.warn(`⚠️ Access denied: User ${(req.user.phone || req.user.email || req.user.id)} (${userRole}) needs minimum role: ${minimumRole}`);
+      console.warn(`⚠️ Access denied: User ${(req.user.phone || req.user.id)} (${userRole}) needs minimum role: ${minimumRole}`);
       return next(new ForbiddenError(
         `Ruxsat berilmadi. Minimum rol: ${minimumRole}`,
         { 
@@ -69,7 +69,7 @@ function checkMinRole(minimumRole) {
       ));
     }
 
-    console.log(`✅ Access granted: User ${(req.user.phone || req.user.email || req.user.id)} (${userRole})`);
+    console.log(`✅ Access granted: User ${(req.user.phone || req.user.id)} (${userRole})`);
     next();
   };
 }
@@ -93,16 +93,16 @@ function checkOwnership(paramName = 'id') {
     const requesterRole = req.user.role;
 
     if (requesterRole === ROLES.ADMIN || requesterRole === ROLES.RECEPTIONIST) {
-      console.log(`✅ Admin/Receptionist override: ${(req.user.phone || req.user.email || req.user.id)} accessing resource`);
+      console.log(`✅ Admin/Receptionist override: ${(req.user.phone || req.user.id)} accessing resource`);
       return next();
     }
 
     if (resourceOwnerId !== requesterId) {
-      console.warn(`⚠️ Ownership check failed: User ${(req.user.phone || req.user.email || req.user.id)} (${requesterId}) tried to access resource owned by ${resourceOwnerId}`);
+      console.warn(`⚠️ Ownership check failed: User ${(req.user.phone || req.user.id)} (${requesterId}) tried to access resource owned by ${resourceOwnerId}`);
       return next(new ForbiddenError("O'z ma'lumotlaringizdan boshqa ma'lumotlarga kirish mumkin emas"));
     }
 
-    console.log(`✅ Ownership verified: ${(req.user.phone || req.user.email || req.user.id)}`);
+    console.log(`✅ Ownership verified: ${(req.user.phone || req.user.id)}`);
     next();
   };
 }
