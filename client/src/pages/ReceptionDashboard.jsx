@@ -4,13 +4,13 @@ import { api } from '../lib/api';
 
 const SERVICES_KEY = 'hospital_services';
 
-/** Format slot_time/start_time as HH:mm; avoids 1970 when value is missing or invalid */
+/** Format slot_time/start_time as HH:mm only (e.g. 14:00); avoids 1970 when value is missing or invalid */
 function formatSlotTime(slotOrStart) {
   const val = slotOrStart;
   if (val == null || val === '') return 'N/A';
   const d = new Date(val);
   if (Number.isNaN(d.getTime())) return 'N/A';
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 function loadServices() {
