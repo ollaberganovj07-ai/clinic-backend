@@ -39,6 +39,7 @@ function normalizePhone(value) {
 
 /**
  * POST /api/auth/login (phone + password)
+ * ONLY accepts req.body.phone - no email. Payload must be { phone, password }.
  */
 async function login(req, res, next) {
   try {

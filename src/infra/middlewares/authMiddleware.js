@@ -24,11 +24,12 @@ function authMiddleware(req, res, next) {
 
     req.user = {
       id: decoded.sub,
-      email: decoded.email,
+      email: decoded.email || null,
+      phone: decoded.phone || null,
       role: decoded.role || 'patient'
     };
-
-    console.log(`✅ Authenticated user: ${req.user.email} (${req.user.role})`);
+    const identifier = req.user.phone || req.user.email || req.user.id;
+    console.log(`✅ Authenticated user: ${identifier} (${req.user.role})`);
 
     next();
   } catch (err) {

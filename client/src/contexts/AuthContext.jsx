@@ -27,8 +27,9 @@ export function AuthProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.auth.login(phone, password);
-      const { user: u, token: t } = data;
+      const res = await api.auth.login(phone, password);
+      const payload = res.data || res;
+      const { user: u, token: t } = payload;
       localStorage.setItem(STORAGE_KEYS.TOKEN, t);
       localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(u));
       setToken(t);
