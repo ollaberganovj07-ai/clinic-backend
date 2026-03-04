@@ -110,7 +110,7 @@ function Login() {
                 }}
                 required
                 autoComplete="tel"
-                placeholder="+998 90 123 45 67"
+                placeholder="Enter phone number"
                 className="w-full px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
               />
               {phoneError && (
